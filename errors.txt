@@ -1,0 +1,107 @@
+Error: Mapping Information Ambiguous / Object Not Retrieved
+Category: Migration Error
+Tags: mapping, migration, object retrieval
+
+RCA:
+Mapping information is ambiguous or referenced object is missing. At least one source object is not processed.
+
+Fix:
+1. Navigate to:
+   Link > Directory > TransitionEngine > Report > listOfObsoleteMpgObjs#1.xml
+2. Copy MappingPLMExternal_ID value:
+   Example: 48821990_410c_665c8408_610aa
+3. Login to MQL (PROD server)
+4. Run:
+   temp query bus * 48821990_410c_665c8408_610aa * select id;
+5. Get object ID:
+   Example: 25683.26263.17429.29643
+6. Delete object:
+   delete bus 25683.26263.17429.29643;
+7. Re-run job from cockpit
+
+---
+
+Error: Version Order Already Exists
+Category: Version Conflict
+Tags: version, duplicate, migration
+
+RCA:
+A version with the same order already exists in the database.
+
+Fix:
+1. Open progress.xml and search for fatal error → get version id
+2. Run MQL:
+   temp query bus * * * where versionid==00003525DDCE682BFFFFFFFFFFFFFF03;
+3. Identify object:
+   VPMReference DESIGN+DTR0000436720+0 A.1
+4. Check project:
+   print bus VPMReference DESIGN+DTR0000436720+0 A.1 select project;
+5. If project = LIGHTPATH and org = DMA/Migration → proceed to delete
+6. Expand object:
+   expand bus VPMReference DESIGN+DTR0000436720+0 A.1;
+7. Get connections:
+   expand bus VPMReference DESIGN+DTR0000436720+0 A.1 select rel id;
+8. Delete connections, 3D shape, then object:
+   pri bus VPMReference DESIGN+DTR0000436720+0 A.1 select id;
+   delete bus <ID>;
+9. Re-run job
+
+---
+
+Error: EMPTY is not a valid user
+Category: Data Issue
+Tags: user, sql, data correction
+
+RCA:
+User field is empty or organization is null in database.
+
+Fix:
+1. Open progress.xml → find Version_id / V_Name
+2. Check DB:
+   select * from definitn.part_list where s_part_number='AA00002193117';
+3. If org is NULL → update:
+   update definitn.part_list set c_org_responsible='DSG' where "$COID"='3D3DBB7FD10D06FF';
+   commit;
+4. Re-run job
+
+---
+
+Error: Database Query Failed
+Category: System Error
+Tags: database, service
+
+RCA:
+Database service interruption or failure.
+
+Fix:
+1. Go to server 024
+2. Open Services
+3. Restart Apache TomEE
+
+---
+
+Error: PLMBATCH Connection Error (EnoviaVPM)
+Category: Connection Issue
+Tags: plmbatch, connection, enovia
+
+RCA:
+Connection aborted between PLMBATCH and EnoviaVPM.
+
+Fix:
+1. Go to server 089
+2. Open SDAM
+3. Restart services
+4. Re-run job
+
+---
+
+Error: Java PLM4ACheckCurrentFilter Error
+Category: Application Error
+Tags: java, plm4a, filter
+
+RCA:
+Error occurred in PLM4A filter validation process.
+
+Fix:
+1. Run the DXC file
+2. Re-run the failed job
